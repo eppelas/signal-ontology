@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru" data-type="mono">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Онтология · подписи</title>
+<style>
+:root{color-scheme:dark;--ink:#b3bdc9;--size:13px;--strength:.68;--face:"SFMono-Regular",Consolas,Menlo,monospace}
+*{box-sizing:border-box}body{margin:0;background:#07090d;color:#a8b2bf;font:12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+html[data-type=sans]{--face:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.controls{position:fixed;top:18px;left:22px;right:22px;display:flex;align-items:center;gap:22px;z-index:3;flex-wrap:wrap}
+.choice{display:flex;gap:16px}button,a{font:inherit;color:inherit;background:transparent;border:0;text-decoration:none;padding:6px 0;cursor:pointer;min-height:32px}
+button[aria-pressed=true]{color:#d5dce5;text-decoration:underline;text-underline-offset:7px;text-decoration-color:#788592}button:focus-visible,a:focus-visible,input:focus-visible{outline:1px solid #9baebe;outline-offset:4px}
+label{display:flex;align-items:center;gap:9px;color:#707e8f}input{width:76px;accent-color:#879aad;height:2px}output{width:32px;color:#8794a4}.back{margin-left:auto;color:#708090}
+.field{position:absolute;inset:0;overflow:hidden}svg{width:100%;height:100%;position:absolute;inset:0;overflow:visible}
+.links{fill:none;stroke:#7295a9;stroke-opacity:.2;stroke-width:.7;vector-effect:non-scaling-stroke}
+.node{position:absolute;left:var(--x);top:var(--y);width:4px;height:4px;border-radius:50%;background:#80a3b4;box-shadow:0 0 8px #83abb920}
+.node::after{content:attr(data-label);position:absolute;left:11px;top:-6px;white-space:nowrap;font:400 var(--size)/1.4 var(--face);letter-spacing:-.02em;color:var(--ink);opacity:var(--strength);transition:opacity .12s}
+.node:hover::after{opacity:1}.node.current{width:6px;height:6px;background:#b0c2d0}.node.current::after{top:13px;left:10px;color:#c4ced8;opacity:.84}
+.n1{--x:31%;--y:22%}.n2{--x:68%;--y:32%}.n3{--x:23%;--y:53%}.n4{--x:61%;--y:73%}.n5{--x:22%;--y:78%}.current{--x:45%;--y:49%}
+@media(max-width:700px){.controls{top:12px;inset-inline:16px;gap:14px}.back{margin-left:0}label{gap:6px}input{width:48px}.node{left:62px}.n1{top:22%}.n2{top:35%}.n3{top:48%}.n4{top:61%}.n5{top:74%}.node.current{left:24px;top:86%}.node.current::after{top:-6px}svg{display:none}.field::before{content:'';position:absolute;left:26px;top:23%;height:63%;width:1px;background:#66899b24}.node:not(.current)::before{content:'';position:absolute;left:-36px;top:2px;width:36px;height:1px;background:#66899b24}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="controls" aria-label="Вид подписей">
+  <div class="choice"><button type="button" data-type="mono" aria-pressed="true">моно</button><button type="button" data-type="sans" aria-pressed="false">гротеск</button></div>
+  <label>размер <input id="size" type="range" min="10" max="16" value="13" step="1" aria-label="Размер подписей"><output id="size-value">13 px</output></label>
+  <label>яркость <input id="strength" type="range" min="0.45" max="1" value="0.68" step="0.01" aria-label="Яркость подписей"></label>
+  <a class="back" href="./">к карте ↗</a>
+</div>
+<main class="field" aria-label="Сон и ночные показатели">
+  <svg viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true"><g class="links"><path d="M450 343 Q352 334 310 154"/><path d="M450 343 Q548 235 680 224"/><path d="M450 343 Q328 319 230 371"/><path d="M450 343 Q535 409 610 511"/><path d="M450 343 Q307 451 220 546"/></g></svg>
+  <span class="node current" data-label="сон и ночные показатели" aria-label="Сон и ночные показатели"></span>
+  <span class="node n1" data-label="ночной профиль HR/HRV" aria-label="Ночной профиль HR/HRV"></span>
+  <span class="node n2" data-label="длительность сна" aria-label="Длительность сна"></span>
+  <span class="node n3" data-label="стадии сна" aria-label="Стадии сна"></span>
+  <span class="node n4" data-label="отклонение ночной температуры" aria-label="Отклонение ночной температуры"></span>
+  <span class="node n5" data-label="ночная дыхательная частота" aria-label="Ночная дыхательная частота"></span>
+</main>
+<script>
+const root=document.documentElement,size=document.querySelector('#size'),strength=document.querySelector('#strength');
+function setType(type){root.dataset.type=type==='sans'?'sans':'mono';document.querySelectorAll('button[data-type]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.type===root.dataset.type)));size.value='13';setSize();}
+function setSize(){root.style.setProperty('--size',`${size.value}px`);document.querySelector('#size-value').value=`${size.value} px`;}
+document.querySelectorAll('button[data-type]').forEach(button=>button.addEventListener('click',()=>setType(button.dataset.type)));
+size.addEventListener('input',setSize);strength.addEventListener('input',()=>root.style.setProperty('--strength',strength.value));
+setType(new URLSearchParams(location.search).get('type'));
+</script>
+</html>

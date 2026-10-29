@@ -1,0 +1,81 @@
+/* Draft Codex fallback after Antigravity timeout and Claude OAuth failure.
+   The same graph supports ?type=mono / ?type=sans through the root bootstrap.
+   No geometry or data depends on this purely typographic switch. */
+:root {
+  --graph-label-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  --graph-label-size: 13px;
+  --graph-label-spacing: -.02em;
+  --graph-label-opacity: .68;
+  --graph-label-colour: rgb(190 199 213 / var(--graph-label-opacity));
+  --graph-label-active: #c3d0da;
+}
+html[data-graph-type='mono'] {
+  --graph-label-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  --graph-label-size: 13px;
+  --graph-label-spacing: -.02em;
+}
+html[data-graph-type='sans'] {
+  --graph-label-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  --graph-label-size: 13px;
+  --graph-label-spacing: 0;
+}
+.semantic-space-labels .semantic-space-label {
+  display: block;
+  width: max-content !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  min-width: 0 !important;
+  padding: 4px 3px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--graph-label-colour) !important;
+  font-family: var(--graph-label-family) !important;
+  font-size: var(--graph-label-size) !important;
+  font-weight: 400 !important;
+  line-height: 16px !important;
+  letter-spacing: var(--graph-label-spacing) !important;
+  text-align: left;
+  text-transform: none;
+  text-wrap: nowrap !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 3px #07090d;
+  transition: color 100ms linear !important;
+}
+.semantic-space-labels .semantic-space-label .semantic-space-label-title {
+  display: block;
+  font: inherit !important;
+  line-height: 16px !important;
+  letter-spacing: inherit !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  text-wrap: nowrap !important;
+  text-decoration: none !important;
+}
+.semantic-space-labels .semantic-space-label-meta {display:none !important}
+.semantic-space-labels .semantic-space-label[data-label-side='left'] {text-align:right}
+.semantic-space-labels .semantic-space-label:hover,
+.semantic-space-labels .semantic-space-label[data-active='true'] {
+  background: transparent !important;
+  color: var(--graph-label-active) !important;
+  z-index: 3;
+}
+.semantic-space-labels .semantic-space-label[data-context-pin='true'] {
+  z-index: 4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgb(190 199 213 / .76) !important;
+}
+.semantic-space-labels .semantic-space-label[data-context-pin='true'] .semantic-space-label-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.semantic-space-labels .semantic-space-label:focus-visible {
+  outline: 1px dotted #9cabbc;
+  outline-offset: 2px;
+}
+@media(prefers-reduced-motion:reduce) {
+  .semantic-space-labels .semantic-space-label {transition:none !important}
+}

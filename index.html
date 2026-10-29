@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Онтология сигналов</title>
+  <script>document.documentElement.dataset.graphType=new URLSearchParams(location.search).get('type')==='sans'?'sans':'mono';</script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="explorer.css">
+  <link rel="stylesheet" href="lab.css">
+  <link rel="stylesheet" href="graph-appearance.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Онтология сигналов</h1>
+      <nav class="tabs" aria-label="Режим">
+        <button type="button" class="tab is-active" id="tab-signals" aria-pressed="true">Сигналы</button>
+        <button type="button" class="tab" id="tab-compose" aria-pressed="false">Визуал и звук</button>
+      </nav>
+    </div>
+    <div class="actions">
+      <label class="search-wrap" aria-label="Поиск сигналов">
+        <input type="search" id="search" placeholder="Найти сигнал или область" aria-label="Найти сигнал или область" aria-controls="search-results" aria-expanded="false" autocomplete="off">
+      </label>
+      <div id="search-results" class="search-results" hidden aria-label="Результаты поиска"></div>
+      <button type="button" class="ghost-btn" id="btn-links" aria-haspopup="dialog">Связи</button>
+      <button type="button" class="ghost-btn" id="btn-list" aria-expanded="false" aria-controls="drawer">Список</button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage" aria-label="Пространственная карта сигналов">
+    <div class="map-viewport" id="map-viewport"><canvas id="scene" role="img" aria-label="Пространственная онтология сигналов" aria-describedby="map-help"></canvas>
+    <div class="world" id="world"></div></div>
+
+    <section class="hud-focus" aria-live="polite">
+      <nav class="crumbs" id="crumbs" aria-label="Путь в онтологии"></nav>
+      <h2 class="focus-title" id="focus-title">Все области сигналов</h2>
+      <p class="focus-meta" id="focus-meta">Загрузка…</p>
+    </section>
+
+    <aside class="drawer" id="drawer" hidden aria-label="Список узлов текущей области">
+      <div class="panel-head">
+        <span id="drawer-title">Области и сигналы</span>
+        <button type="button" class="icon-btn" id="close-drawer" aria-label="Закрыть список">×</button>
+      </div>
+      <div class="drawer-list" id="drawer-list"></div>
+    </aside>
+
+    <aside class="detail" id="detail" hidden aria-labelledby="detail-title">
+      <div class="panel-head">
+        <span class="eyebrow">Сигнал</span>
+        <button type="button" class="icon-btn" id="close-detail" aria-label="Закрыть описание">×</button>
+      </div>
+      <h3 id="detail-title"></h3>
+      <div id="detail-content"></div>
+      <button type="button" class="detail-action" id="detail-lab">Добавить в связь ↗</button>
+    </aside>
+
+    <footer class="bottom-bar">
+      <div class="zoom-controls" role="group" aria-label="Масштаб">
+        <button type="button" class="ctrl-btn" id="btn-back" aria-label="На уровень выше">↑</button>
+        <button type="button" class="ctrl-btn" id="zoom-out" aria-label="Отдалить">−</button>
+        <button type="button" class="ctrl-btn" id="zoom-reset">Обзор</button>
+        <button type="button" class="ctrl-btn" id="zoom-in" aria-label="Приблизить">+</button>
+      </div>
+      <p class="gesture-hint" id="map-help">Перемещайтесь перетаскиванием · Приближайте колесом или двумя пальцами</p>
+      <button id="btn-map-mode" class="ghost-btn map-mode-button" type="button" aria-pressed="false" aria-label="Скрыть меню и развернуть карту">Только карта ⤢</button>
+      <button id="btn-projects" class="ghost-btn" type="button" aria-haspopup="dialog">Работы с видео ↗</button>
+    </footer>
+  </main>
+
+  <dialog class="composer" id="composer" aria-label="Связи сигналов и выразительных параметров"></dialog>
+  <dialog id="projects-dialog" class="projects-dialog" aria-labelledby="projects-title">
+    <header class="panel-head"><h2 id="projects-title">Работы с видео</h2><button type="button" id="close-projects" class="icon-btn" aria-label="Закрыть работы">×</button></header>
+    <div id="projects-content"></div>
+  </dialog>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <div id="load-error" class="load-error" hidden role="alert"><h2>Не удалось открыть онтологию</h2><p id="load-error-text"></p><button type="button" id="retry">Повторить</button></div>
+  <script type="module" src="explorer-controller.js"></script>
+</body>
+</html>

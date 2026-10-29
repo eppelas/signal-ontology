@@ -1,0 +1,36 @@
+const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const random=array=>array[crypto.getRandomValues(new Uint32Array(1))[0]%array.length];
+const names={direct:'прямая зависимость',inverse:'инверсия',smoothstep:'S-кривая',threshold:'порог 50%',steps:'пять ступеней'};
+
+export function buildAgentPrompt(data,connections,preview={}){
+  const signals=new Map(data.signals.map(s=>[s.id,s])),outputs=new Map(data.outputs.parameters.map(p=>[p.id,p]));
+  const active=connections.filter(c=>c.enabled);
+  if(!active.length)return 'Сначала включите хотя бы одну связь.';
+  const lines=['Создай интерактивный этюд на чёрном поле с тонкими светящимися линиями.','',...active.map((c,i)=>{
+    const s=signals.get(c.inputId),p=outputs.get(c.outputId),mode=c.mode?.startsWith('pointer')?`реальная координата указателя ${c.mode==='pointer-x'?'X':'Y'}, нормированная по размеру окна`:`ручной нормированный тестовый вход ${c.value.toFixed(2)} (0…1)`;
+    const demo=preview.parameters?.[p.id]?.demoRange;
+    const bindings=(p.bindings||[p.binding]).filter(Boolean).map(b=>`${b.technology||''} ${b.target}`.trim()).join('; ');
+    return `${i+1}. «${s.signal}» [${s.id}] → ${names[c.transform]} → «${p.name_ru}» [${p.id}]. ${mode}. Выход: ${p.type}, ${p.unit}${demo?`; диапазон пробы ${JSON.stringify(demo)}`:`; локальной пробы нет; ${p.range?.note||'диапазон и преобразование определяются выбранным адаптером'}`}. ${p.what_changes}${bindings?` Реализация: ${bindings}.`:''}`;
+  }),'','Пути получения:',...[...new Set(active.map(c=>c.inputId))].map(id=>`${id}: ${signals.get(id).acquisition}`),'','Для прототипа реализуй указанный тестовый режим. Для реальных входов задай извлечение признака, единицы, диапазон и поведение при пропусках. Сохрани статус прогнозов, оценок моделей и симуляций. Векторам и категориям задай явное преобразование; масштаб — равномерный XYZ.','Общая сцена; при повторе параметра или несовместимых примитивов действует последняя активная настройка. Звук — по кнопке, движение можно остановить. Свету и тактильности нужен отдельный доступный адаптер.','','Опорные источники:',...[...new Set(active.flatMap(c=>{const s=signals.get(c.inputId),p=outputs.get(c.outputId);return [`${s.id}: ${s.sourceLinks[0]?.url||''}`,`${p.id}: ${p.source_urls[0]||''}`];}))]];
+  return lines.join('\n');
+}
+
+export function setupIdeation({data,supported,getConnections,getPreviewState,onTry,showModal,closeModal,notify}){
+  const shell=document.getElementById('app-shell');
+  const top=document.querySelector('.topbar-actions');
+  const ideas=document.createElement('button');ideas.type='button';ideas.className='top-action-btn';ideas.id='open-ideas-btn';ideas.innerHTML='<span class="button-long">Предложить связь</span><span class="button-short" aria-hidden="true">Новая идея</span>';ideas.setAttribute('aria-label','Предложить связь');ideas.setAttribute('aria-haspopup','dialog');
+  const promptButton=document.createElement('button');promptButton.type='button';promptButton.className='top-action-btn';promptButton.id='open-prompt-btn';promptButton.innerHTML='<span class="button-long">Промпт для агента</span><span class="button-short" aria-hidden="true">Промпт</span>';promptButton.setAttribute('aria-label','Промпт для агента');promptButton.setAttribute('aria-haspopup','dialog');
+  top.prepend(ideas,promptButton);
+  const ideaModal=document.createElement('div');ideaModal.id='idea-modal';ideaModal.className='modal-backdrop hidden';ideaModal.setAttribute('role','dialog');ideaModal.setAttribute('aria-modal','true');ideaModal.setAttribute('aria-labelledby','idea-title');
+  ideaModal.innerHTML='<div class="modal-panel"><div class="modal-header"><div><span class="modal-eyebrow">Художественная гипотеза</span><h2 id="idea-title" class="modal-title">Неожиданная связь</h2></div><button class="modal-close-btn" type="button" data-close-modal="idea-modal" aria-label="Закрыть идею">×</button></div><div id="idea-content"></div><div class="idea-actions"><button id="next-idea" type="button" class="project-link project-link-secondary">Другая идея</button><button id="try-idea" type="button" class="project-link">Попробовать</button></div></div>';
+  const promptModal=document.createElement('div');promptModal.id='prompt-modal';promptModal.className='modal-backdrop hidden';promptModal.setAttribute('role','dialog');promptModal.setAttribute('aria-modal','true');promptModal.setAttribute('aria-labelledby','prompt-title');
+  promptModal.innerHTML='<div class="modal-panel"><div class="modal-header"><div><span class="modal-eyebrow">Из собранных связей</span><h2 id="prompt-title" class="modal-title">Промпт для агента</h2></div><button class="modal-close-btn" type="button" data-close-modal="prompt-modal" aria-label="Закрыть промпт">×</button></div><label class="sr-only" for="agent-prompt-text">Текст промпта</label><textarea id="agent-prompt-text" spellcheck="false"></textarea><div class="idea-actions"><button id="download-prompt" type="button" class="project-link project-link-secondary">Скачать .txt</button><button id="copy-prompt" type="button" class="project-link">Скопировать</button></div></div>';
+  shell.append(ideaModal,promptModal);
+  let candidate;
+  function suggest(){const domain=random(data.domains),s=random(data.signals.filter(s=>s.domain===domain.id)),p=random(data.outputs.parameters.filter(p=>supported.has(p.id)));candidate={inputId:s.id,outputId:p.id};document.getElementById('idea-content').innerHTML=`<div class="idea-pair"><div><span class="idea-overline">${escape(domain.label)}</span><h3>${escape(s.signal)}</h3><p>${escape(s.observable)}</p></div><span class="idea-arrow" aria-hidden="true">↓</span><div><span class="idea-overline">Выразительный параметр</span><h3>${escape(p.name_ru)}</h3><p>${escape(p.what_changes)}</p></div></div><p class="compact-note">Художественное сочетание для пробы. Реальный источник потребует выбора признака и нормализации.</p><details><summary>Способ получения и ограничения</summary><p>${escape(s.acquisition)}</p><p>${escape(s.limitations)}</p></details>`;}
+  ideas.onclick=()=>{suggest();showModal('idea-modal');};document.getElementById('next-idea').onclick=suggest;
+  document.getElementById('try-idea').onclick=()=>{if(getConnections().length>=4){notify('В сцене уже четыре связи. Уберите одну, чтобы добавить идею.');return;}onTry(candidate);closeModal();notify('Идея добавлена к связям.');};
+  promptButton.onclick=()=>{document.getElementById('agent-prompt-text').value=buildAgentPrompt(data,getConnections(),getPreviewState?.()||{});showModal('prompt-modal');};
+  document.getElementById('copy-prompt').onclick=async()=>{const area=document.getElementById('agent-prompt-text');try{if(!navigator.clipboard)throw new Error('Clipboard unavailable');await navigator.clipboard.writeText(area.value);notify('Промпт скопирован.');}catch{area.focus();area.select();notify('Текст выделен. Используйте команду «Копировать».');}};
+  document.getElementById('download-prompt').onclick=()=>{const url=URL.createObjectURL(new Blob([document.getElementById('agent-prompt-text').value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='signal-ontology-prompt.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);};
+}
